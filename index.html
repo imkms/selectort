@@ -1,384 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shuffle Selector · Egon Services</title>
-  <meta name="description" content="A Shuffle-styled selector to choose and launch Egon services.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23a78bfa' d='M50 16h-6a4 4 0 1 1 0-8h12a2 2 0 0 1 2 2v12a4 4 0 1 1-8 0v-6Zm-4 32h4v6a4 4 0 1 0 8 0V42a2 2 0 0 0-2-2H44a8 8 0 0 1-6.928-3.999l-1.217-2.03A8 8 0 0 0 30.928 30H18a4 4 0 1 1 0-8h12.928a8 8 0 0 0 6.144-3.03l1.217-2.03A8 8 0 0 1 44 14h4a4 4 0 1 1 0 8h-4a8 8 0 0 0-6.144 3.03l-1.217 2.03A8 8 0 0 1 30.928 30H18a4 4 0 1 0 0 8h12.928a8 8 0 0 1 6.144 3.03l1.217 2.03A8 8 0 0 0 44 48Z'/%3E%3C/svg%3E" />
-  <style>
-    :root {
-      --bg: #0b0b10; --bg-elev: #101018; --card: #151522; --card-2: #12121c;
-      --text: #e8e7ef; --muted: #b8b7c7; --ring: #ffffff22;
-      --accent: #a78bfa; --accent-2: #22d3ee; --ok: #10b981; --warn: #f59e0b; --off: #6b7280;
-      --shadow: 0 10px 30px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.25);
-      --radius: 16px; --radius-sm: 10px; --radius-lg: 22px;
-    }
-    @media (prefers-color-scheme: light) {
-      :root { --bg: #f7f7ff; --bg-elev: #ffffff; --card: #ffffff; --card-2: #ffffff; --text: #181826; --muted: #4a4a55; --ring: #00000014; --shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.06);}    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:
-        radial-gradient(1200px 800px at 10% -10%, #3b82f611, transparent 60%),
-        radial-gradient(1000px 700px at 110% 10%, #a78bfA17, transparent 55%),
-        radial-gradient(1000px 800px at 50% 120%, #22d3ee14, transparent 60%),
-        var(--bg);
-      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-    }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 56px; }
-    .bg-stripes { position: fixed; inset: -10% -10% auto -10%; height: 70vh; background: repeating-linear-gradient(110deg, transparent 0 26px, #ffffff08 26px 52px); pointer-events: none; mask-image: radial-gradient(60% 70% at 50% 0%, black, transparent 70%); -webkit-mask-image: radial-gradient(60% 70% at 50% 0%, black, transparent 70%); }
-
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 10px; position: sticky; top: 0; z-index: 5; background: linear-gradient(180deg, #ffffff12, transparent 80%); backdrop-filter: blur(4px); }
-    .brand { display:flex; align-items:center; gap:12px; color:inherit; text-decoration:none; }
-    .brand .logo { width:42px; height:42px; border-radius: 12px; display:grid; place-items:center; background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; box-shadow: var(--shadow); }
-    .brand .logo svg { width: 22px; height: 22px; }
-    .brand .title { display:flex; flex-direction:column; }
-    .brand .name { font-weight: 900; letter-spacing:.2px; font-size: 1.05rem; }
-    .brand .sub { color: var(--muted); font-weight: 500; font-size: 0.95rem; }
-
-    .actions { display:flex; align-items:center; gap:10px; }
-    .btn { --bgc: var(--card); --fgc: var(--text); border: 1px solid var(--ring); background: var(--bgc); color: var(--fgc); padding: 10px 14px; border-radius: 12px; cursor: pointer; display:inline-flex; gap:10px; align-items:center; transition: background .15s ease, border-color .15s ease, transform 80ms ease; }
-    .btn:hover{ border-color:#ffffff38; background:#ffffff0e; }
-    .btn:active{ transform: translateY(1px); }
-    .btn .icon { width: 18px; height: 18px; }
-    .btn-primary { --bgc: linear-gradient(135deg, var(--accent), var(--accent-2)); --fgc: #fff; border-color: transparent; }
-
-    /* Main selector layout */
-    .hero { margin-top: 10px; display:grid; gap: 14px; }
-    .title-xl { font-size: clamp(1.8rem, 3.2vw + 1rem, 3rem); font-weight: 900; line-height: 1.05; }
-    .grad { background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip:text; background-clip:text; color: transparent; }
-    .lead { color: var(--muted); max-width: 60ch; }
-
-    /* Native select styling */
-    .picker { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .select {
-      position: relative; display:flex; align-items:center; gap:10px; padding: 10px 12px; border-radius: 12px; border:1px solid var(--ring); background: linear-gradient(180deg, var(--card), var(--card-2)); box-shadow: var(--shadow);
-    }
-    .select select { appearance: none; border:0; outline:0; background: transparent; color: var(--text); font-size: 1rem; padding-right: 22px; cursor: pointer; }
-    .select .chev { position:absolute; right:10px; pointer-events:none; color: var(--muted); width: 18px; height: 18px; }
-
-    /* Stage card */
-    .stage { position: relative; margin-top: 10px; }
-    .card {
-      border: 1px solid var(--ring); border-radius: var(--radius);
-      background: radial-gradient(150% 120% at 100% -10%, #a78bfa14, transparent 60%), radial-gradient(120% 140% at -10% 110%, #22d3ee12, transparent 50%), linear-gradient(180deg, var(--card), var(--card-2));
-      box-shadow: var(--shadow); padding: 22px; display:grid; gap: 14px; min-height: 220px; overflow: hidden;
-    }
-    .status { position:absolute; top: 12px; right: 12px; background:#ffffff12; border:1px solid var(--ring); color: var(--muted); font-size:12px; padding:6px 8px; border-radius: 999px; display:inline-flex; align-items:center; gap:6px; backdrop-filter: blur(6px); }
-    .dot { width:10px; height:10px; border-radius:50%; background: var(--ok); box-shadow: 0 0 0 6px rgba(16,185,129,.16); }
-    .dot.warn { background: var(--warn); box-shadow: 0 0 0 6px rgba(245,158,11,.2); }
-    .dot.off { background: var(--off); box-shadow: 0 0 0 6px rgba(107,114,128,.18); }
-
-    .row { display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
-    .meta { display:flex; align-items:center; gap: 12px; }
-    .avatar { width: 56px; height: 56px; border-radius: 14px; display:grid; place-items:center; color:#fff; background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); }
-    .name { font-weight: 900; letter-spacing:.2px; font-size: 1.05rem; }
-    .host { color: var(--muted); font-size: .95rem; }
-    .desc { color: var(--muted); font-size: .98rem; min-height: 40px; }
-
-    .controls { display:flex; gap: 8px; align-items:center; }
-    .nav-btn { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--ring); background: #ffffff10; display:grid; place-items:center; color: var(--text); cursor: pointer; transition: transform 80ms ease, background .15s ease; }
-    .nav-btn:hover { background: #ffffff18; }
-    .nav-btn:active { transform: translateY(1px); }
-    .nav-btn[disabled] { opacity:.5; cursor:not-allowed; }
-
-    .tags { display:flex; flex-wrap: wrap; gap: 8px; }
-    .tag { font-size: 12px; padding: 6px 8px; border-radius: 999px; border: 1px solid var(--ring); color: var(--muted); background: #ffffff07; }
-    .cta { display:flex; gap: 8px; }
-
-    /* Pills navigation */
-    .pills-wrap { margin-top: 10px; }
-    .pills { display:flex; gap: 8px; overflow:auto; padding-bottom: 4px; }
-    .pill { border:1px solid var(--ring); background:#ffffff08; color: var(--muted); padding: 8px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: background .15s ease, color .15s ease, border-color .15s ease; }
-    .pill:hover { background:#ffffff12; border-color:#ffffff33; }
-    .pill.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color:#fff; border-color: transparent; }
-
-    .footer { color: var(--muted); text-align:center; margin-top: 28px; font-size: .92rem; }
-
-    .toaster { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); display:grid; gap:8px; z-index: 20; }
-    .toast { padding: 12px 14px; border-radius: 12px; background:#11121aee; color:#e5fbea; border:1px solid #00ffb033; box-shadow: var(--shadow); transform: translateY(20px); opacity:0; transition: all .18s ease; }
-    .toast.show { transform: translateY(0); opacity: 1; }
-
-    /* Focus styles */
-    :focus-visible { outline: 3px solid #a78bfa66; outline-offset: 2px; border-radius: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Black Hole Animation</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-  <div class="bg-stripes" aria-hidden="true"></div>
-  <div class="container">
-    <header>
-      <a class="brand" href="#" aria-label="Shuffle Selector Home">
-        <div class="logo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 3 21 3 21 8"></polyline>
-            <line x1="4" y1="20" x2="21" y2="3"></line>
-            <polyline points="21 16 21 21 16 21"></polyline>
-            <line x1="15" y1="15" x2="21" y2="21"></line>
-            <line x1="4" y1="4" x2="9" y2="9"></line>
-          </svg>
-        </div>
-        <div class="title">
-          <div class="name">Shuffle Selector</div>
-          <div class="sub">Egon Services</div>
-        </div>
-      </a>
-      <div class="actions">
-        <button id="shuffleBtn" class="btn btn-primary" title="Shuffle a random service">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-          Shuffle
-        </button>
-      </div>
-    </header>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-    <section class="hero" aria-label="Service selector">
-      <h1 class="title-xl">Pick a service. <span class="grad">Launch instantly.</span></h1>
-      <p class="lead">No search. Just pick an option from the dropdown or the pills below, and hit Visit.</p>
+        // Black hole
+        const blackholeGeometry = new THREE.SphereGeometry(1, 32, 32);
+        const blackholeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const blackhole = new THREE.Mesh(blackholeGeometry, blackholeMaterial);
+        scene.add(blackhole);
 
-      <div class="picker">
-        <div class="select" title="Select a service">
-          <select id="serviceSelect" aria-label="Select a service"></select>
-          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-        </div>
-        <div id="counter" aria-live="polite" style="color: var(--muted);"></div>
-      </div>
+        // Accretion disk
+        const diskGeometry = new THREE.RingGeometry(1.5, 3, 64);
+        const diskMaterial = new THREE.MeshBasicMaterial({ color: 0xff4500, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+        const disk = new THREE.Mesh(diskGeometry, diskMaterial);
+        disk.rotation.x = Math.PI / 2;
+        scene.add(disk);
 
-      <div class="stage">
-        <div class="card" id="card" tabindex="0" role="group" aria-label="Selected service">
-          <div class="status" id="status"><span class="dot"></span><span id="statusText">Available</span></div>
-          <div class="row">
-            <div class="meta">
-              <div class="avatar" id="avatar" aria-hidden="true">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 3.3l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 1 1 20.7 7.04l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .66.27 1.3.75 1.75.48.45.76 1.07.76 1.73 0 .66-.27 1.28-.75 1.72Z"/></svg>
-              </div>
-              <div>
-                <div class="name" id="name">Egon MC</div>
-                <div class="host" id="host">mc.egon.services</div>
-              </div>
-            </div>
-            <div class="controls">
-              <button id="prevBtn" class="nav-btn" title="Previous (←)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-              </button>
-              <button id="nextBtn" class="nav-btn" title="Next (→)">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </button>
-            </div>
-          </div>
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 1000;
+        const positions = new Float32Array(particlesCount * 3);
+        for (let i = 0; i < particlesCount * 3; i++) {
+            positions[i] = (Math.random() - 0.5) * 10;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.02 });
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
 
-          <div class="desc" id="desc">Minecraft portal for Egon Services.</div>
+        camera.position.z = 5;
 
-          <div class="row">
-            <div class="tags" id="tags"></div>
-            <div class="cta">
-              <a id="visitBtn" class="btn" href="#" target="_blank" rel="noopener">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-                Visit
-              </a>
-              <button id="copyBtn" class="btn">
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                Copy
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="pills-wrap">
-        <div id="pills" class="pills" role="tablist" aria-label="Services"></div>
-      </div>
-
-      <p class="footer">Tip: Ask me when you want to add more services—I'll update this page for you.</p>
-    </section>
-  </div>
-
-  <div class="toaster" aria-live="assertive" aria-atomic="true"></div>
-
-  <!-- Services Data: Only mc.egon.services for now (valid JSON, no comments). -->
-  <script id="services-data" type="application/json">
-  {"services":[{"name":"Egon MC","host":"mc.egon.services","url":"https://mc.egon.services","description":"Minecraft portal for Egon Services.","tags":["minecraft","games","web"],"status":"online","accent":"#22d3ee"}]}
-  </script>
-
-  <script>
-    const qs = (s, el=document) => el.querySelector(s);
-    const qsa = (s, el=document) => [...el.querySelectorAll(s)];
-
-    // Read data
-    function getData() {
-      try {
-        const raw = qs('#services-data').textContent.trim();
-        const json = JSON.parse(raw);
-        return Array.isArray(json.services) ? json.services : [];
-      } catch (e) {
-        console.error('Failed parsing services-data', e);
-        return [];
-      }
-    }
-
-    const ALL = getData();
-    let idx = 0;
-
-    // DOM refs
-    const selectEl = qs('#serviceSelect');
-    const card = qs('#card');
-    const nameEl = qs('#name');
-    const hostEl = qs('#host');
-    const descEl = qs('#desc');
-    const tagsEl = qs('#tags');
-    const visitBtn = qs('#visitBtn');
-    const copyBtn = qs('#copyBtn');
-    const status = qs('#status');
-    const statusText = qs('#statusText');
-    const avatar = qs('#avatar');
-    const pills = qs('#pills');
-    const counter = qs('#counter');
-    const prevBtn = qs('#prevBtn');
-    const nextBtn = qs('#nextBtn');
-
-    function escapeHtml(str) {
-      return (str + '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#039;'}[c]));
-    }
-
-    function renderSelectOptions() {
-      selectEl.innerHTML = '';
-      ALL.forEach((s, i) => {
-        const opt = document.createElement('option');
-        opt.value = i;
-        const label = s.name || s.host || `Service ${i+1}`;
-        const suffix = s.status === 'online' ? '' : s.status === 'coming_soon' ? ' (coming soon)' : ' (unavailable)';
-        opt.textContent = label + suffix;
-        selectEl.appendChild(opt);
-      });
-    }
-
-    function renderPills() {
-      pills.innerHTML = '';
-      ALL.forEach((s, i) => {
-        const el = document.createElement('button');
-        el.className = 'pill' + (i === idx ? ' active' : '');
-        el.setAttribute('role', 'tab');
-        el.setAttribute('aria-selected', i === idx ? 'true' : 'false');
-        el.textContent = s.name || s.host || `Service ${i+1}`;
-        el.addEventListener('click', () => setIndex(i));
-        pills.appendChild(el);
-      });
-    }
-
-    function renderCard() {
-      if (!ALL.length) return;
-      const s = ALL[idx];
-      const disabled = s.status && s.status !== 'online';
-      const statusLabel = s.status === 'online' ? 'Available' : (s.status === 'coming_soon' ? 'Coming soon' : 'Unavailable');
-      statusText.textContent = statusLabel;
-      status.querySelector('.dot').className = 'dot ' + (s.status === 'online' ? '' : (s.status === 'coming_soon' ? 'warn' : 'off'));
-
-      card.style.setProperty('--accent', s.accent || getComputedStyle(document.documentElement).getPropertyValue('--accent'));
-      avatar.style.background = `linear-gradient(135deg, ${s.accent || '#a78bfa'}, #ffffff22)`;
-
-      nameEl.textContent = s.name || s.host || `Service ${idx+1}`;
-      hostEl.textContent = s.host || '';
-      descEl.textContent = s.description || '';
-
-      tagsEl.innerHTML = (s.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
-
-      visitBtn.href = disabled ? '#' : s.url;
-      if (disabled) {
-        visitBtn.setAttribute('aria-disabled', 'true');
-        visitBtn.classList.add('disabled');
-        visitBtn.removeAttribute('target');
-        visitBtn.removeAttribute('rel');
-      } else {
-        visitBtn.removeAttribute('aria-disabled');
-        visitBtn.classList.remove('disabled');
-        visitBtn.setAttribute('target', '_blank');
-        visitBtn.setAttribute('rel', 'noopener');
-      }
-
-      copyBtn.onclick = async () => {
-        const value = s.host || s.url;
-        await copyToClipboard(value);
-        toast(`Copied: ${value}`);
-      };
-
-      // nav buttons
-      prevBtn.disabled = idx <= 0;
-      nextBtn.disabled = idx >= ALL.length - 1;
-
-      counter.textContent = `${idx+1} / ${ALL.length}`;
-      selectEl.value = idx;
-
-      // update active pill
-      qsa('.pill', pills).forEach((el, i) => {
-        el.classList.toggle('active', i === idx);
-        el.setAttribute('aria-selected', i === idx ? 'true' : 'false');
-      });
-    }
-
-    function setIndex(i) {
-      if (i < 0 || i >= ALL.length) return;
-      idx = i;
-      renderCard();
-    }
-
-    function next() { if (idx < ALL.length - 1) setIndex(idx + 1); }
-    function prev() { if (idx > 0) setIndex(idx - 1); }
-
-    async function copyToClipboard(text) {
-      try { await navigator.clipboard.writeText(text); }
-      catch {
-        const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch {} document.body.removeChild(ta);
-      }
-    }
-
-    function toast(message, timeout=1500) {
-      const host = document.querySelector('.toaster');
-      const el = document.createElement('div'); el.className = 'toast'; el.textContent = message; host.appendChild(el);
-      requestAnimationFrame(() => el.classList.add('show'));
-      setTimeout(() => { el.classList.remove('show'); setTimeout(() => host.removeChild(el), 180); }, timeout);
-    }
-
-    // Init
-    if (!ALL.length) {
-      qs('.hero').innerHTML = '<div class="card">No services configured. Add items to the JSON block at the bottom of this file.</div>';
-    } else {
-      renderSelectOptions();
-      renderPills();
-      renderCard();
-    }
-
-    // Events
-    selectEl.addEventListener('change', (e) => setIndex(+e.target.value));
-    prevBtn.addEventListener('click', prev);
-    nextBtn.addEventListener('click', next);
-
-    qs('#shuffleBtn').addEventListener('click', () => {
-      const avail = ALL.filter(s => s.status === 'online');
-      const pick = (avail.length ? avail : ALL)[Math.floor(Math.random() * (avail.length ? avail.length : ALL.length))];
-      const i = ALL.indexOf(pick);
-      setIndex(i);
-      toast(`Selected: ${pick.name || pick.host}`);
-    });
-
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-      if (e.key === 'ArrowRight') next();
-      else if (e.key === 'ArrowLeft') prev();
-      else if (e.key === 'Enter') visitBtn.click();
-      else if (e.key.toLowerCase() === 'r') qs('#shuffleBtn').click();
-      else if (/^[1-9]$/.test(e.key)) { const n = +e.key - 1; if (n < ALL.length) setIndex(n); }
-    });
-  </script>
-
-  <noscript>
-    <div style="max-width: 1100px; margin: 16px auto; padding: 16px;">
-      <div style="padding: 16px; border: 1px solid #ccc; border-radius: 12px;">
-        <strong>JavaScript is disabled.</strong>
-        <p>You can still visit: <a href="https://mc.egon.services" target="_blank" rel="noopener">mc.egon.services</a></p>
-      </div>
-    </div>
-  </noscript>
+        function animate() {
+            requestAnimationFrame(animate);
+            disk.rotation.z += 0.005;
+            particles.rotation.y += 0.002;
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
-</html>
+</html></content>
+</xai:function_call name="bash">
+<parameter name="command">open /Users/egonmbp/blackhole.html
